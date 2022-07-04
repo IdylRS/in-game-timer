@@ -60,6 +60,10 @@ class TimerOverlay extends OverlayPanel
     public static OverlayMenuEntry START_ENTRY = new OverlayMenuEntry(RUNELITE_OVERLAY, "Start", "Timer");
     public static OverlayMenuEntry RESET_ENTRY = new OverlayMenuEntry(RUNELITE_OVERLAY, "Reset", "Timer");
 
+    public static TitleComponent PAUSE_TITLE = TitleComponent.builder().color(Color.YELLOW).text("Timer Paused").build();
+    public static TitleComponent START_TITLE = TitleComponent.builder().color(Color.GREEN).text("Timer Running").build();
+    public static TitleComponent TIME_EXPIRED_TITLE = TitleComponent.builder().color(Color.RED).text("Time Expired").build();
+
     @Inject
     private TimerOverlay(InGameTimerConfig config, InGameTimerPlugin plugin)
     {
@@ -71,7 +75,7 @@ class TimerOverlay extends OverlayPanel
         getMenuEntries().add(RESET_ENTRY);
         getMenuEntries().add(START_ENTRY);
 
-        panelComponent.getChildren().add(TitleComponent.builder().text("In Game Timer").build());
+        panelComponent.getChildren().add(PAUSE_TITLE);
 
         timeRemainingComponent = LineComponent.builder().left("Time Remaining:").right("").build();
         panelComponent.getChildren().add(timeRemainingComponent);
@@ -123,8 +127,8 @@ class TimerOverlay extends OverlayPanel
 
     public void pauseTimer() {
         isPaused = true;
-        getMenuEntries().remove(PAUSE_ENTRY);
-        getMenuEntries().add(START_ENTRY);
+        addOverlayEntry(START_ENTRY);
+        updateOverlayTitle(PAUSE_TITLE);
     }
 
     public void resumeTimer() {
@@ -133,18 +137,31 @@ class TimerOverlay extends OverlayPanel
         isPaused = false;
         timeUp = false;
         lastUpdate = Instant.now().getEpochSecond();
-        getMenuEntries().add(PAUSE_ENTRY);
-        getMenuEntries().remove(START_ENTRY);
+        addOverlayEntry(PAUSE_ENTRY);
+        updateOverlayTitle(START_TITLE);
     }
 
     private void timeUp() {
-        getMenuEntries().remove(PAUSE_ENTRY);
-        getMenuEntries().add(START_ENTRY);
+        addOverlayEntry(START_ENTRY);
+        updateOverlayTitle(TIME_EXPIRED_TITLE);
         timeUp = true;
     }
 
     public void setLoggedIn(boolean isLoggedIn) {
         loggedIn = isLoggedIn;
+    }
+
+    private void updateOverlayTitle(TitleComponent title) {
+        panelComponent.getChildren().clear();
+        panelComponent.getChildren().add(title);
+        panelComponent.getChildren().add(timeRemainingComponent);
+    }
+
+    private void addOverlayEntry(OverlayMenuEntry entry) {
+        getMenuEntries().remove(PAUSE_ENTRY);
+        getMenuEntries().remove(START_ENTRY);
+
+        getMenuEntries().add(entry);
     }
 
     private long getSecondsElapsed() {
@@ -164,16 +181,13 @@ class TimerOverlay extends OverlayPanel
         final long minutes = TimeUnit.SECONDS.toMinutes(remaining % 3600);
         final long seconds = remaining % 60;
 
-        if(remaining <= 0) {
-            return "Time's up!";
-        }
         if(remaining < 60) {
-            return String.format("%02ds", seconds);
+            return String.format("%01ds", seconds);
         }
         if(remaining < 3600) {
-            return String.format("%2dm%02ds", minutes, seconds);
+            return String.format("%2dm %02ds", minutes, seconds);
         }
 
-        return String.format("%1dh%02dm", hours, minutes);
+        return String.format("%1dh %02dm", hours, minutes);
     }
 }
