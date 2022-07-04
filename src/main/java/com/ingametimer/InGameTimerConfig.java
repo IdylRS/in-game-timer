@@ -18,14 +18,4 @@ public interface InGameTimerConfig extends Config
 	{
 		return 0;
 	}
-
-	@ConfigItem(
-			keyName = "runTimer",
-			name = "Run Timer",
-			description = "When checked the timer will run while logged in"
-	)
-	default boolean runTimer()
-	{
-		return false;
-	}
 }

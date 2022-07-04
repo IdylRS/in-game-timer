@@ -53,6 +53,12 @@ class TimerOverlay extends OverlayPanel
 
     private boolean timeUp;
 
+    private boolean isPaused;
+
+    public static OverlayMenuEntry PAUSE_ENTRY = new OverlayMenuEntry(RUNELITE_OVERLAY, "Pause", "Timer");
+    public static OverlayMenuEntry START_ENTRY = new OverlayMenuEntry(RUNELITE_OVERLAY, "Start", "Timer");
+    public static OverlayMenuEntry RESET_ENTRY = new OverlayMenuEntry(RUNELITE_OVERLAY, "Reset", "Timer");
+
     @Inject
     private TimerOverlay(InGameTimerConfig config, InGameTimerPlugin plugin)
     {
@@ -61,17 +67,19 @@ class TimerOverlay extends OverlayPanel
         this.config = config;
         this.plugin = plugin;
 
-        getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Reset", "Timer"));
-        getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Pause", "Timer"));
+        getMenuEntries().add(RESET_ENTRY);
+        getMenuEntries().add(START_ENTRY);
 
         panelComponent.getChildren().add(TitleComponent.builder().text("In Game Timer").build());
 
         timeRemainingComponent = LineComponent.builder().left("Time Remaining:").right("").build();
+        panelComponent.getChildren().add(timeRemainingComponent);
 
-        secondsElapsed = -1;
+        secondsElapsed = 0;
         lastUpdate = -1;
         loggedIn = false;
         timeUp = false;
+        isPaused = true;
 
         setClearChildren(false);
         setLayer(OverlayLayer.ABOVE_WIDGETS);
@@ -84,7 +92,7 @@ class TimerOverlay extends OverlayPanel
         graphics.setFont(FontManager.getRunescapeFont());
 
         final long now = Instant.now().getEpochSecond();
-        if(loggedIn && this.config.runTimer() && now - lastUpdate >= 1 && !timeUp) {
+        if(loggedIn && !isPaused && now - lastUpdate >= 1 && !timeUp) {
             lastUpdate = now;
             secondsElapsed++;
         }
@@ -99,23 +107,28 @@ class TimerOverlay extends OverlayPanel
     }
 
     public void reset() {
-        secondsElapsed = -1;
-        timeUp = false;
-        timeRemainingComponent.setRight("");
-        panelComponent.getChildren().clear();
-    }
-
-    public void setTimerStart() {
         secondsElapsed = 0;
         timeUp = false;
+        pauseTimer();
+        timeRemainingComponent.setRight("");
+    }
+
+    public void pauseTimer() {
+        isPaused = true;
+        getMenuEntries().remove(PAUSE_ENTRY);
+        getMenuEntries().add(START_ENTRY);
+    }
+
+    public void resumeTimer() {
+        isPaused = false;
+        timeUp = false;
         lastUpdate = Instant.now().getEpochSecond();
-        panelComponent.getChildren().clear();
-        panelComponent.getChildren().add(timeRemainingComponent);
+        getMenuEntries().add(PAUSE_ENTRY);
+        getMenuEntries().remove(START_ENTRY);
     }
 
     public void setLoggedIn(boolean isLoggedIn) {
         loggedIn = isLoggedIn;
-        setTimerStart();
     }
 
     private static String formatTime(final long remaining)
