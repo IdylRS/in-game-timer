@@ -5,7 +5,7 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.Units;
 
-@ConfigGroup("ingametimer")
+@ConfigGroup(InGameTimerPlugin.CONFIG_GROUP)
 public interface InGameTimerConfig extends Config
 {
 	@ConfigItem(

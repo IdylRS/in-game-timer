@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.*;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -75,7 +76,8 @@ class TimerOverlay extends OverlayPanel
         timeRemainingComponent = LineComponent.builder().left("Time Remaining:").right("").build();
         panelComponent.getChildren().add(timeRemainingComponent);
 
-        secondsElapsed = 0;
+
+        secondsElapsed = getSecondsElapsed();
         lastUpdate = -1;
         loggedIn = false;
         timeUp = false;
@@ -95,9 +97,13 @@ class TimerOverlay extends OverlayPanel
         if(loggedIn && !isPaused && now - lastUpdate >= 1 && !timeUp) {
             lastUpdate = now;
             secondsElapsed++;
+
+            if(secondsElapsed % 10 == 0) {
+                plugin.saveSecondsElapsed(secondsElapsed);
+            }
         }
         final long timeRemaining = this.config.countdown() * 60 - secondsElapsed;
-        if(timeRemaining <= 0) timeUp = true;
+        if(timeRemaining <= 0) timeUp();
         final Color timeColor =  timeRemaining < 60 ? Color.RED : timeRemaining < 300 ? Color.YELLOW : Color.WHITE;
 
         timeRemainingComponent.setRightColor(timeColor);
@@ -127,8 +133,24 @@ class TimerOverlay extends OverlayPanel
         getMenuEntries().remove(START_ENTRY);
     }
 
+    private void timeUp() {
+        getMenuEntries().remove(PAUSE_ENTRY);
+        getMenuEntries().remove(START_ENTRY);
+        timeUp = true;
+    }
+
     public void setLoggedIn(boolean isLoggedIn) {
         loggedIn = isLoggedIn;
+    }
+
+    private long getSecondsElapsed() {
+        final String savedSeconds = plugin.getSavedSecondsElapsed();
+
+        if(savedSeconds.isEmpty() || savedSeconds == null) {
+            return 0;
+        }
+
+        return Long.parseLong(savedSeconds);
     }
 
     private static String formatTime(final long remaining)
