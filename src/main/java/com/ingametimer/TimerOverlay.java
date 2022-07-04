@@ -103,7 +103,7 @@ class TimerOverlay extends OverlayPanel
             }
         }
         final long timeRemaining = this.config.countdown() * 60 - secondsElapsed;
-        if(timeRemaining <= 0) timeUp();
+        if(timeRemaining <= 0 && !timeUp) timeUp();
         final Color timeColor =  timeRemaining < 60 ? Color.RED : timeRemaining < 300 ? Color.YELLOW : Color.WHITE;
 
         timeRemainingComponent.setRightColor(timeColor);
@@ -115,6 +115,8 @@ class TimerOverlay extends OverlayPanel
     public void reset() {
         secondsElapsed = 0;
         timeUp = false;
+        getMenuEntries().remove(START_ENTRY);
+        getMenuEntries().remove(PAUSE_ENTRY);
         pauseTimer();
         timeRemainingComponent.setRight("");
     }
@@ -126,6 +128,8 @@ class TimerOverlay extends OverlayPanel
     }
 
     public void resumeTimer() {
+        if(timeUp) reset();
+
         isPaused = false;
         timeUp = false;
         lastUpdate = Instant.now().getEpochSecond();
@@ -135,7 +139,7 @@ class TimerOverlay extends OverlayPanel
 
     private void timeUp() {
         getMenuEntries().remove(PAUSE_ENTRY);
-        getMenuEntries().remove(START_ENTRY);
+        getMenuEntries().add(START_ENTRY);
         timeUp = true;
     }
 
@@ -167,9 +171,9 @@ class TimerOverlay extends OverlayPanel
             return String.format("%02ds", seconds);
         }
         if(remaining < 3600) {
-            return String.format("%02dm%02ds", minutes, seconds);
+            return String.format("%2dm%02ds", minutes, seconds);
         }
 
-        return String.format("%01dh%1dm", hours, minutes);
+        return String.format("%1dh%02dm", hours, minutes);
     }
 }
