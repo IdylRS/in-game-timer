@@ -98,7 +98,7 @@ class TimerOverlay extends OverlayPanel
             lastUpdate = now;
             secondsElapsed++;
 
-            if(secondsElapsed % 10 == 0) {
+            if(secondsElapsed % 5 == 0) {
                 plugin.saveSecondsElapsed(secondsElapsed);
             }
         }
