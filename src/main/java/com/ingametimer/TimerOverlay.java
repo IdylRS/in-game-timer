@@ -55,8 +55,7 @@ class TimerOverlay extends OverlayPanel
 
         timeRemainingComponent = LineComponent.builder().left("Time Remaining:").right("").build();
         panelComponent.getChildren().add(timeRemainingComponent);
-
-
+        
         secondsElapsed = getSecondsElapsed();
         lastUpdate = -1;
         loggedIn = false;
@@ -64,8 +63,6 @@ class TimerOverlay extends OverlayPanel
         isPaused = true;
 
         setClearChildren(false);
-        setLayer(OverlayLayer.ABOVE_WIDGETS);
-        setPriority(OverlayPriority.HIGH);
     }
 
     @Override
