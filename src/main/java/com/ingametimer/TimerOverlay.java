@@ -143,7 +143,7 @@ class TimerOverlay extends OverlayPanel
     private long getSecondsElapsed() {
         final String savedSeconds = plugin.getSavedSecondsElapsed();
 
-        if(savedSeconds.isEmpty() || savedSeconds == null) {
+        if(savedSeconds == null ||  savedSeconds.isEmpty()) {
             return 0;
         }
 
